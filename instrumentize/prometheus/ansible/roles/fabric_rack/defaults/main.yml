@@ -95,16 +95,7 @@ alert_rule_files_part_with_ptp:
 
 
 
-alert_rule_files: "{% if hostvars[hank_name + '-time'] is defined and 'ansible_host' in (hostvars[hank_name + '-time']).keys() %}
-
- {{ alert_rule_files_part_with_ptp}}
-
-{% else %} 
-
-
-{{ alert_rule_files_part_without_ptp}}
-
-{% endif %}"
+alert_rule_files: "{% if hostvars[hank_name + '-time'] is defined and 'ansible_host' in (hostvars[hank_name + '-time']).keys() %}{{ alert_rule_files_part_with_ptp }}{% else %}{{ alert_rule_files_part_without_ptp }}{% endif %}"
 
 
 
