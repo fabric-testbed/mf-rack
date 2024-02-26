@@ -1,0 +1,27 @@
+---
+# This playbook is only needed for migrating racks from python docker sdk to docker compose deployment method.
+# This file may als be used for testing. 
+- name: Remove old "fabric_prometheus_ containers
+  hosts: "{{ rack_to_install | default(omit) }}"
+
+  tasks:
+  # Removes containers with the given names.      
+  - name: Remove Docker Containers
+    community.docker.docker_container:
+      state: absent
+      name: "fabric_prometheus_{{ item }}"
+      # to remove deprecation warning
+      container_default_behavior: no_defaults 
+    with_items: "{{ containers_to_act_on }}"
+    become: yes
+
+  vars:
+    containers_to_act_on: 
+      - prometheus
+      - grafana
+      - nginx
+      - thanos_sidecar
+      - alertmanager
+      - blackbox
+      - docker_exporter
+      - snmp
