@@ -13,7 +13,8 @@ install_node_exporters: yes
 install_name: fabric_prometheus
 docker_network_name: "{{ install_name }}"
 base_data_dir: "/opt/data/{{ install_name }}"
-base_install_dir: "/opt/{{ install_name }}" 
+base_install_dir: "/opt/{{ install_name }}"
+tmp_deployment_files: "tmp_deployment_files" 
 
 #hostname: "{{ hank_name }}.fabric-testbed.net"
 host_cert: "/etc/ssl/certs/{{ hank_name }}-hn_fabric-testbed_net.pem"

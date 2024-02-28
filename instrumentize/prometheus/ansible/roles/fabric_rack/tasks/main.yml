@@ -86,6 +86,9 @@
     - set_vpn_pings #== yes
 
 
-
-
-
+- name: Clean up tmp_deployment_files 
+  file:
+    path: "{{ tmp_deployment_files }}"
+    state: absent
+  delegate_to: 127.0.0.1
+  when: component_type == 'head'

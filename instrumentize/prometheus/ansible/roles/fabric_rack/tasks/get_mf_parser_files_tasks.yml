@@ -5,7 +5,7 @@
   ansible.builtin.git:
     repo: git@github.com:fabric-testbed/mf-parsers.git
     #dest: /tmp/mf-parsers
-    dest: tmp_deployment_files/mf-parsers
+    dest: "{{ tmp_deployment_files+'/mf-parsers' }}"
     single_branch: yes
     version: main
     force: true
