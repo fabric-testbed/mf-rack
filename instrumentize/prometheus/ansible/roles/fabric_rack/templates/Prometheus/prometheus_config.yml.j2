@@ -10,7 +10,7 @@ global:
 
 ################# REMOTE WRITE for PUBLIC METRIC SITES ##################
 
-{% include "{{ tmp_deployment_files+'/mf-parsers/remote_write/remote_write_configs/2024.01.29.21.41_public_remote_write_out.yml' }}" %}
+{% include "{{ tmp_deployment_files}}/mf-parsers/remote_write/remote_write_configs/2024.01.29.21.41_public_remote_write_out.yml" %}
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
