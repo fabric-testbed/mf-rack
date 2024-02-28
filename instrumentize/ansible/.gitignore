@@ -1,0 +1,8 @@
+# This is a guard against adding the tmp deployment files to the repo.
+# Do not remove this file
+
+# For mf-parser files and deployment hosts & groups
+tmp_deployment_files/*
+
+# For local config created by notebook
+ansible.cfg
