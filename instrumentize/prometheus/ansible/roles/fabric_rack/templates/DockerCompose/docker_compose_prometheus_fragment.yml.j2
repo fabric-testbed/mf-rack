@@ -1,7 +1,8 @@
 # Prometheus container
   prometheus:
     container_name: "{{ install_name }}_prometheus"
-    image: prom/prometheus:v2.33.4
+    #image: prom/prometheus:v2.33.4
+    image: prom/prometheus:v2.51.2
     # TODO revisit/document user settings for this container
     user: 0:0
     volumes:      

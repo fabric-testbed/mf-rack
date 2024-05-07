@@ -1,0 +1,6 @@
+# Make sure no run notebook checkpoints get committed
+.ipynb_checkpoints
+# Make sure no copies of notebooks are committed - may be ones that have run
+*Copy*.ipynb
+# Don't commit any checkpoint dirs
+.ipynb_checkpoints/

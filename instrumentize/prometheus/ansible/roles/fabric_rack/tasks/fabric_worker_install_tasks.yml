@@ -1,0 +1,198 @@
+---
+
+# WORKER NODE INSTALL
+
+- name: Sanity Check
+  debug:
+    msg: "!!!!!!!!!!!!!Setting up Fabric Worker Node  Install {{ install_name }} on {{ hank_name }} at {{ ansible_host }}.!!!!!!!!!!!!!"
+
+# needed on remote for htpasswd
+- name: passlib
+  become: yes 
+  pip: 
+    name: passlib[bcrypt]
+    executable: pip3 
+    state: present
+
+####################     
+#      USER        #
+####################
+- name: Setup user for promtheus monitoring system
+  # Create a user to setup all the fab monitoring stuff under.
+  include_tasks: setup_tasks/create_prom_user_tasks.yml
+
+##############################
+#  Stop the Docker Compose   #
+##############################
+
+- name: Stop Docker Compose 
+  block:
+
+  - name: Check if docker-compose.yml exists 
+    stat: 
+      path: "{{ base_install_dir }}/docker-compose.yml"
+    register: docker_compose_file_status
+
+  - name: Stop Docker compose file
+    shell: docker-compose down 
+    args:
+      chdir: "{{ base_install_dir }}"
+    when: docker_compose_file_status.stat.exists
+    ignore_errors: true
+
+  # rescue:
+
+  #   - name: Stop Docker Compose Failed
+  #     debug:
+  #       msg: Docker-Compose stop failed. Ignoring. Most likely this is due to invalid docker-compose file that failed to start in the first place. 
+
+####################
+#  DOCKER NETWORK  #
+####################
+# note that taking down the network may affect other containers added by other scripts 
+- name: Takedown the docker network to be used by the monitoring containers.
+  include_tasks: takedown_tasks/remove_docker_network_tasks.yml
+
+# only use ipv4 docker network if there is no ipv6
+# if there is ipv6 then docker will also create ipv4 network
+
+# ipv4
+- name: Setup the docker network to be used by the monitoring containers.
+  include_tasks: setup_tasks/setup_docker_network_tasks.yml
+  # when:
+  #   - network_layer['host']['ipv6'] == ""
+  #   - network_layer['host']['ipv4'] == "v4"  
+
+# # OR
+# # ipv6 dual network settings
+# - name: Setup the docker network to be used by the monitoring containers.
+#   # regression error -- include_tasks: setup_tasks/setup_docker_dual_network_tasks.yml
+#   include_tasks: setup_tasks/setup_docker_ipv6_network_tasks.yml
+#   when:
+#     - network_layer['host']['ipv6'] == "v6"
+
+  
+########################################
+# Backup all base install directories  #
+#     - ONLY done on dev node          #
+########################################
+- name: Backup base install directories
+  include_tasks: takedown_tasks/backup_base_install_dir_tasks.yml
+  when:
+    - hank_name == 'uky' or hank_name == 'renc' or hank_name == 'lbnl'
+    # NOTE hardcoded here to back up dev racks since they may be manipulated by hand
+    # All other racks should never have any non ansible installed code so deleteing it all is fine.
+
+# ####################
+# # Remove all base install directories #
+# ####################
+- name: Remove base install directories
+  include_tasks: takedown_tasks/remove_base_install_dirs_tasks.yml
+  
+
+########################
+#   PROCESS EXPORTER   #
+########################
+
+- name: Setup Process Exporter.
+  block: 
+
+    - name: Setup Process Exporter Directory
+      file:
+        path: "{{ base_install_dir }}/process_exporter/{{ item }}"
+        state: directory
+        recurse: yes
+        owner: "{{ prom_user_name }}"
+        group: "{{ prom_group_name }}"
+      with_items:
+        - [ "config" ]
+      become: yes
+
+    - name: Add Process Exporter Config File
+      template:
+        src: "{{process_exporter_templates_dir }}/config.yml.j2"
+        dest: "{{ base_install_dir }}/process_exporter/config/config.yml"
+        owner: "{{ prom_user_name }}"
+        group: "{{ prom_group_name }}"
+      become: yes
+
+
+####################
+#     NGINX        #
+####################
+- name: Setup Nginx
+  block:
+    # Directories
+    - name: Nginx Directories
+      include_tasks: Nginx/setup_nginx_directories_tasks.yml
+
+    # Config files
+    - name: Nginx Configs
+      include_tasks: Nginx/config_nginx_tasks.yml
+      # vars: 
+      #       nginx_template_dir: "{{ nginx_config_template_dir }}"
+          
+    # Confd server files
+    - name: Nginx Add Confd Files
+      include_tasks: Nginx/confd_nginx_tasks.yml
+      #over ride the defaults for head node
+      vars: 
+          nginx_server_confd_template_files:
+           #- worker_cadvisor.conf
+            #- worker_process_exporter.conf
+            #- worker_cadvisor.conf
+            - worker_exporter_proxy.conf
+
+    # Add self-signed cert
+    - name: create key    
+      openssl_privatekey:
+        path: "{{ base_install_dir }}/nginx/certs/tls.key"
+        size: 2048
+        owner: node-exp
+        group: node-exp
+
+    - name: create csr
+      openssl_csr:
+        common_name: '{{ hostname }}'
+        path: "{{ base_install_dir }}/nginx/certs/tls.csr"
+        privatekey_path: "{{ base_install_dir }}/nginx/certs/tls.key"
+        owner: node-exp
+        group: node-exp
+
+    - name: create cert
+      openssl_certificate:
+        path: "{{ base_install_dir }}/nginx/certs/tls.cert"
+        csr_path: "{{ base_install_dir }}/nginx/certs/tls.csr"
+        privatekey_path: "{{ base_install_dir }}/nginx/certs/tls.key"
+        provider: selfsigned
+        owner: node-exp
+        group: node-exp
+
+  become: yes
+
+  when: true
+
+
+##############################
+#  Create Docker Compose     #
+##############################
+
+- name: Add Docker Compose file 
+  block:
+    - name: Create docker-compose.yml 
+      template:
+        src: "templates/DockerCompose/WorkerNode/docker_compose_complete.yml.j2"
+        dest: "{{ base_install_dir }}/docker-compose.yml"
+  become: yes
+
+##############################
+#  Start Docker Compose      #
+##############################
+
+- name: Start Docker Compose 
+  block:
+  - name: Start Docker compose file
+    shell: docker-compose up -d
+    args:
+      chdir: "{{ base_install_dir }}"
+

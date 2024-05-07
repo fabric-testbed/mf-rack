@@ -53,6 +53,13 @@ prometheus_config_template_files:
   # snmp exporters for rack devices
   - base_snmp_targets.yml
 
+  # process exporter for libvirtd
+  - libvirt_process_exporter_targets.yml
+
+  # cadvisor for worker nodes
+  - cadvisor_worker_targets.yml
+
+
 prometheus_retention_time: 60d
 
 # Note empty list var must have [] Without that is is considered a list of one empty string which then causes the entire directory to be copied instead of nothing.  
@@ -78,6 +85,7 @@ alert_rule_files_part_without_ptp:
   # vpn ping only needed on uky/renc racks but do no harm if on others
   - vpn_ping_alert_rules.yml
   #- ptp_time_alert_rules.yml
+  - process_alert_rules.yml
 
 alert_rule_files_part_with_ptp:
   - alert_alert_rules.yml
@@ -90,6 +98,7 @@ alert_rule_files_part_with_ptp:
   # vpn ping only needed on uky/renc racks but do no harm if on others
   - vpn_ping_alert_rules.yml
   - ptp_time_alert_rules.yml
+  - process_alert_rules.yml
 
 #alert_rule_files:  "{% if hostvars[hank_name + '-time'] is defined and 'ansible_host' in (hostvars[hank_name + '-time']).keys() %}  {{ lookup('vars', 'alert_rule_files_part_with_ptp') }}  {% else %} {{ lookup('vars', 'alert_rule_files_part_without_ptp') }} {% endif %}"
 #alert_rule_files:  "{% if hostvars[hank_name + '-time'] is defined and 'ansible_host' in (hostvars[hank_name + '-time']).keys() %}  {{ alert_rule_files_part_with_ptp }}  {% else %} {{ alert_rule_files_part_without_ptp }} {% endif %}"
@@ -167,7 +176,9 @@ nginx_ip_ports:
   #- 10922:10922   # thanos stats
   #- "{{ alertmanager_port }}:{{ alertmanager_port }}"    # alertmanager 
 
-
+nginx_ip_ports_worker:
+  # ports needed on the worker node
+  - "29090:29090"
 
 nginx_template_dir: templates/Nginx
 
@@ -187,7 +198,12 @@ nginx_cert: "{{ host_cert }}"
 nginx_key: "{{ host_key }}"
 nginx_interm_cert: "{{ host_interm_cert }}"
 
+#######################
+#  Process Exporter   #
+#######################    
 
+
+process_exporter_templates_dir: templates/ProcessExporter
 
 ####################
 #  Node Exporter   #

@@ -1,0 +1,17 @@
+{% include './docker_compose_' + 'base' +  '_fragment.yml.j2' %}
+
+
+# now the containers 
+
+
+##### PROCESS EXPORTER #####################################################
+
+{% include './docker_compose_' + 'process_exporter' +  '_fragment.yml.j2' %}
+
+##### CADVISOR######## #####################################################
+
+{% include './docker_compose_' + 'cadvisor' +  '_fragment.yml.j2' %}
+
+##### NGINX ################################################################
+
+{% include './docker_compose_' + 'nginx' +  '_fragment.yml.j2' %}

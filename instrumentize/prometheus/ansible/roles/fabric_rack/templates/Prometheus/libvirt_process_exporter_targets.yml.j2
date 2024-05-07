@@ -1,0 +1,17 @@
+---
+# Set targets for exporters on worker node.
+
+# Worker Nodes
+- targets:
+{% for h in groups[hank_name+"_worker"] %}
+        - '{{ hostvars[h].hostname }}:29090/process'
+{% endfor %}
+  labels:
+        job: process_exporter
+        component_type: worker
+
+
+
+
+
+

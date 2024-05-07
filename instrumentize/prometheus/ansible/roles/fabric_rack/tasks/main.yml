@@ -7,18 +7,21 @@
 ############################
 
 - name: Get Parsed Files 
+  tags:
+  - clone_mf_parsers
   import_tasks: get_mf_parser_files_tasks.yml
   delegate_to: 127.0.0.1
   when: component_type == 'head'
-  tags:
-  - clone_mf_parsers
+
 
 
 # OK
-##############################
-#  Fabric Rack Prometheus    #
-##############################
-- name: Install Fabric-Prometheus setup 
+########################################
+#  Fabric Rack Head Node Prometheus    #
+########################################
+- name: Head Node - Install Fabric-Prometheus setup 
+  tags:
+  - install_head_node
   block:
   - name: Install Fabric Rack
     import_tasks: fabric_rack_install_tasks.yml
@@ -28,11 +31,24 @@
   #   - install_type == 'fabric_rack'
 
 
+#
+##############################
+#  Fabric Rack Worker Node   #
+##############################
+- name: Worker Node - Install Fabric-Prometheus setup
+  tags: install_worker_nodes
+  block:
+  - name: Install Fabric Rack
+    import_tasks: fabric_worker_install_tasks.yml
+    when: component_type == 'worker'
+
+
 # OK
 ##############################
 #  Node Exporter Install     #
 ##############################
 - name: Install node_exporter 
+  tags: install_node_exporters
   # need each node to have node_exporter
   block:
   - name: Install Node_exporter
@@ -70,6 +86,7 @@
 # Setup VPN Ping Configs     #
 ##############################
 - name: Setup VPN configs 
+  tags: install_head_node
   block:
   - name: Setup Promtheus Config Files
     include_tasks: Prometheus/add_prometheus_config_templates.yml
@@ -85,10 +102,12 @@
     - set_vpn_pings is defined
     - set_vpn_pings #== yes
 
-
-- name: Clean up tmp_deployment_files 
-  file:
-    path: "{{ tmp_deployment_files }}"
-    state: absent
-  delegate_to: 127.0.0.1
-  when: component_type == 'head'
+#############
+# Cant do - will slow down every deploymente
+# WILL WIPE OUT EDITED var & hosts files!!!
+# - name: Clean up tmp_deployment_files 
+#   file:
+#     path: "{{ tmp_deployment_files }}"
+#     state: absent
+#   delegate_to: 127.0.0.1
+#   when: component_type == 'head'
