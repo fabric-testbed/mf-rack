@@ -1,12 +1,10 @@
 filebeat.inputs:
-{% if component_type != 'head' and component_type != 'worker' %}
-{% for collector in logs_collection %}
-{% if hostname in collector.hosts %}
+{% (if component_type == 'central-vm' or component_type == 'central-server') and filebeats_special_log_paths is defined and filebeats_special_log_paths|length > 0 %}
   - type: filestream
     enabled: true
     id: {{ hostname }}
     paths:
-       - {{ collector.log_path }}
+       - {{ filebeats_special_log_paths }}
 {% endif %}
 {% endfor %}
 {% elif component_type == 'head' %}
@@ -86,6 +84,14 @@ filebeat.modules:
       var.paths: ["/var/log/secure*"]
       var.convert_timezone: false
 
+{% endif %}
+{% if component_type == 'central-vm' or component_type == 'central-server' %}
+filebeat.modules:
+  - module: system
+    auth:
+      enabled: {{ system_enable }}
+      var.paths: ["/var/log/secure*"]
+      var.convert_timezone: false
 {% endif %}
 {% if component_type == 'head' %}
 
