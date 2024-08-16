@@ -5,7 +5,6 @@ filebeat.inputs:
     id: {{ hostname }}
     paths:
        - {{ filebeats_special_log_paths }}
-{% endif %}
 {% elif component_type == 'head' %}
   - type: filestream
     enabled: true
