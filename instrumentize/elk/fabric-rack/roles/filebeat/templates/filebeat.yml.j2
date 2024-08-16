@@ -6,7 +6,6 @@ filebeat.inputs:
     paths:
        - {{ filebeats_special_log_paths }}
 {% endif %}
-{% endfor %}
 {% elif component_type == 'head' %}
   - type: filestream
     enabled: true
