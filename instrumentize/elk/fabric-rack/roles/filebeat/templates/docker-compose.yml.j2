@@ -20,7 +20,7 @@ services:
 {% if "/home/nrig-service/ControlFramework/fabric_cf" not in log_path %}
       - "{{ log_path|dirname+'/:'+log_path|dirname+'/' }}"
 {% else %}
-      - (log_path|split('*'))|first
+      - "{{ (log_path|split('*'))|first }}"
 {% endif %}
 {% endfor %}
 {% else %}
