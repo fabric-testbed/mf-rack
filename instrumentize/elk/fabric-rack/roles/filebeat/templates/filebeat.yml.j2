@@ -1,10 +1,12 @@
 filebeat.inputs:
-{% (if component_type == 'central-vm' or component_type == 'central-server') and filebeats_special_log_paths is defined and filebeats_special_log_paths|length > 0 %}
+{% if component_type == 'central-vm' or component_type == 'central-server' %}
+{% if filebeats_special_log_paths is defined and filebeats_special_log_paths|length > 0 %}
   - type: filestream
     enabled: true
     id: {{ hostname }}
-    paths:
-       - {{ filebeats_special_log_paths }}
+    paths: {{ filebeats_special_log_paths }}
+    
+{% endif %}
 {% elif component_type == 'head' %}
   - type: filestream
     enabled: true
