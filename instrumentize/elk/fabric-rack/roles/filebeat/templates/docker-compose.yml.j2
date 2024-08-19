@@ -24,11 +24,10 @@ services:
 {% endif %}
 {% endfor %}
 {% else %}
-      - "/var/log/:/var/log/:ro"
-      - "/opt/data/zeek/logs:/opt/zeek/logs"
-      - "/opt/data/zeek/spool:/opt/zeek/spool"
       - "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/"
 {% endif %}
+      - "/var/log/:/var/log/:ro"
+
     secrets:
       - source: filebeat.yml
         target: /usr/share/filebeat/filebeat.yml
