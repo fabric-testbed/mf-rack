@@ -45,6 +45,13 @@ filebeat.inputs:
        - /var/log/remote/192.168.{{ hank_id }}.110/*.log
        - /var/log/remote/192.168.{{ hank_id }}.111/*.log
 
+  {% if hank_id == 11 %}
+    - type: filestream
+      enabled: true
+      id: nat64-gw
+      paths:
+         - /var/log/remote/192.168.{{ hank_id }}.4/*.log
+  {% endif %}
 {% endif %}
 {% if component_type == 'head' or component_type == 'worker' %}
 
