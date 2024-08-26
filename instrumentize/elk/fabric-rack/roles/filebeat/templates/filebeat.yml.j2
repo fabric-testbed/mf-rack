@@ -52,6 +52,7 @@ filebeat.inputs:
       paths:
          - /var/log/remote/192.168.{{ hank_id }}.4/*.log
   {% endif %}
+  
 {% endif %}
 {% if component_type == 'head' or component_type == 'worker' %}
 
