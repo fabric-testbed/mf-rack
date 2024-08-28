@@ -25,7 +25,7 @@
     - { src: "docker-compose.yml.j2", dest: "/opt/beats/docker-compose.yml" }
 
 - name: Find Docker Compose version
-  shell: docker compose version
+  shell: docker compose version --short
   register: docker_compose_version
   ignore_errors: True
 

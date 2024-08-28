@@ -4,10 +4,11 @@ filebeat.inputs:
   - type: filestream
     enabled: true
     id: {{ hostname }}
-    paths: {{ filebeats_special_log_paths }}
-    
+    paths:{% for special_log_path in filebeats_special_log_paths %}
+     - "{{special_log_path}}"{% endfor %}    
 {% endif %}
 {% elif component_type == 'head' %}
+
   - type: filestream
     enabled: true
     id: {{ hank_name }}-am
