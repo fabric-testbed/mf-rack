@@ -29,6 +29,7 @@
   register: docker_compose_version
   ignore_errors: True
 
+
 - block:
   - name: Start Filebeat
     community.docker.docker_compose:
@@ -37,19 +38,33 @@
       restarted: true
       debug: false
     register: output
-  when: docker_compose_version is defined and (docker_compose_version|split(' ')|replace('v','')|float < 2.18.0 )
+
+  - name: Check if service is running
+    ansible.builtin.assert:
+      that:
+        - "output.services.filebeat.fabric_beats_filebeat.state.running"
+  when: 
+    - docker_compose_version is defined
+    - "docker_compose_version.stdout is version('2.18.0','<')"
 
 - block:
   - name: Start Filebeat
     community.docker.docker_compose_v2:
       project_src: /opt/beats/
-      state: present
+      state: restarted
       build: always
+      recreate: always
     register: output
-  when: docker_compose_version is defined and (docker_compose_version|split(' ')|replace('v','')|float >= 2.18.0 )
 
-- name: Check if service is running
-  ansible.builtin.assert:
-    that:
-      - "output.services.filebeat.fabric_beats_filebeat.state.running"
+  - name: Check if service is running
+    ansible.builtin.assert:
+      that:
+        #- "output.services.filebeat.fabric_beats_filebeat.state.running"
+        - beats_container.State == "running"
+    vars:
+      beats_container: >-
+        {{ output.containers | selectattr("Service", "equalto", "filebeat") | first }}
 
+  when: 
+    - docker_compose_version is defined 
+    - "docker_compose_version.stdout is version('2.18.0','>=')"
