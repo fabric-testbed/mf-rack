@@ -15,9 +15,12 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/var/lib/docker/containers/:/var/lib/docker/containers/:ro"
-      - "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/"
-      - "/home/nrig-service/CredentialManager/log/credmgr/:/home/nrig-service/CredentialManager/log/credmgr/"
-      - "/home/nrig-service/fabric-core-api/logs/metrics/:/home/nrig-service/fabric-core-api/logs/metrics/"
+      - "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/:ro"
+      - "/home/nrig-service/CredentialManager/log/credmgr/:/home/nrig-service/CredentialManager/log/credmgr/:ro"
+      - "/home/nrig-service/fabric-core-api/logs/metrics/:/home/nrig-service/fabric-core-api/logs/metrics/:ro"
+      - "/var/lib/docker/volumes/dns-docker_dns-logs/_data/:/var/lib/docker/volumes/dns-docker_dns-logs/_data/:ro"
+      - "/opt/dms/mail-logs/:/opt/dms/mail-logs/:ro"
+      - "/var/lib/docker/volumes/fabric-vpn_openvpn-log/_data/:/var/lib/docker/volumes/fabric-vpn_openvpn-log/_data/:ro"
       - "/var/log/:/var/log/:ro"
 
     secrets:
