@@ -24,13 +24,29 @@
     - { src: "filebeat.yml.j2", dest: "/opt/beats/filebeat-docker.yml" }
     - { src: "docker-compose.yml.j2", dest: "/opt/beats/docker-compose.yml" }
 
-- name: Start Filebeat
-  community.docker.docker_compose:
-    project_src: /opt/beats/
-    state: present
-    restarted: true
-    debug: false
-  register: output
+- name: Find Docker Compose version
+  shell: docker compose version
+  register: docker_compose_version
+  ignore_errors: True
+
+- block:
+  - name: Start Filebeat
+    community.docker.docker_compose:
+      project_src: /opt/beats/
+      state: present
+      restarted: true
+      debug: false
+    register: output
+  when: docker_compose_version is defined and (docker_compose_version|split(' ')|replace('v','')|float < 2.18.0 )
+
+- block:
+  - name: Start Filebeat
+    community.docker.docker_compose_v2:
+      project_src: /opt/beats/
+      state: present
+      build: always
+    register: output
+  when: docker_compose_version is defined and (docker_compose_version|split(' ')|replace('v','')|float >= 2.18.0 )
 
 - name: Check if service is running
   ansible.builtin.assert:
