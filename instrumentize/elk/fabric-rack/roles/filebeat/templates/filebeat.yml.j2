@@ -1,12 +1,13 @@
+---
 filebeat.inputs:
 {% if component_type == 'central-vm' or component_type == 'central-server' %}
-{% if filebeats_special_log_paths is defined and filebeats_special_log_paths|length > 0 %}
+{% if filebeats_special is defined and filebeats_special.logs is defined and filebeats_special.logs|length > 0 %}
   - type: filestream
     enabled: true
     id: {{ hostname }}
     paths:
-{% for special_log_path in filebeats_special_log_paths %}
-      - "{{special_log_path}}"
+{% for log in filebeats_special.logs %}
+      - "{{log}}"
 {% endfor %}    
 {% endif %}
 {% elif component_type == 'head' %}
@@ -55,7 +56,6 @@ filebeat.inputs:
       paths:
          - /var/log/remote/192.168.{{ hank_id }}.4/*.log
   {% endif %}
-  
 {% endif %}
 {% if component_type == 'head' or component_type == 'worker' %}
 
@@ -87,11 +87,11 @@ filebeat.inputs:
 filebeat.modules:
   - module: system
     syslog:
-      enabled: {{ system_enable }}
+      enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/messages"]
       var.convert_timezone: false
     auth:
-      enabled: {{ system_enable }}
+      enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/secure"]
       var.convert_timezone: false
 
@@ -100,7 +100,7 @@ filebeat.modules:
 filebeat.modules:
   - module: system
     auth:
-      enabled: {{ system_enable }}
+      enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/secure"]
       var.convert_timezone: false
 {% endif %}
@@ -138,7 +138,7 @@ output.logstash:
 output.kafka:
   enabled: true
   hosts:
-{% for mfkfk_host in hostvars[inventory_hostname]['mfkfk_hosts'] %} 
+{% for mfkfk_host in hostvars[inventory_hostname]['mfkfk_hosts'] %}
     - "{{mfkfk_host}}"
 {% endfor %}
   topic: "{{ hostvars[inventory_hostname]['mfkfk_topic_name'] }}"

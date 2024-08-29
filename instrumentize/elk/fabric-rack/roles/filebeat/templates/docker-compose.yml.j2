@@ -18,7 +18,7 @@ services:
       - "/var/log/:/var/log/:ro"
 {% if filebeats_special is defined and filebeats_special.paths is defined %}
 {% for log_path in filebeats_special.paths %}
-      - "{{log_path}}"
+      - "{{log_path}}:{{log_path}}:ro"
 {% endfor %}
 {% endif %}
 #      "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/:ro"
