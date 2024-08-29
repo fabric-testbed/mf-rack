@@ -20,6 +20,7 @@ services:
 {% for log_path in filebeats_special.paths %}
       - "{{log_path}}"
 {% endfor %}
+{% endif %}
 #      "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/:ro"
 #      - "/home/nrig-service/CredentialManager/log/credmgr/:/home/nrig-service/CredentialManager/log/credmgr/:ro"
 #      - "/home/nrig-service/fabric-core-api/logs/metrics/:/home/nrig-service/fabric-core-api/logs/metrics/:ro"
