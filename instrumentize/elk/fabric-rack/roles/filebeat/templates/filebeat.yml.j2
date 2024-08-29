@@ -4,8 +4,10 @@ filebeat.inputs:
   - type: filestream
     enabled: true
     id: {{ hostname }}
-    paths:{% for special_log_path in filebeats_special_log_paths %}
-     - "{{special_log_path}}"{% endfor %}    
+    paths:
+{% for special_log_path in filebeats_special_log_paths %}
+      - "{{special_log_path}}"
+{% endfor %}    
 {% endif %}
 {% elif component_type == 'head' %}
 
@@ -90,7 +92,7 @@ filebeat.modules:
       var.convert_timezone: false
     auth:
       enabled: {{ system_enable }}
-      var.paths: ["/var/log/secure*"]
+      var.paths: ["/var/log/secure"]
       var.convert_timezone: false
 
 {% endif %}
@@ -99,7 +101,7 @@ filebeat.modules:
   - module: system
     auth:
       enabled: {{ system_enable }}
-      var.paths: ["/var/log/secure*"]
+      var.paths: ["/var/log/secure"]
       var.convert_timezone: false
 {% endif %}
 {% if component_type == 'head' %}
@@ -135,13 +137,19 @@ output.logstash:
 # -------------------------------- Kafka Output --------------------------------
 output.kafka:
   enabled: true
-  hosts: {{ hostvars[inventory_hostname]['mfkfk_hosts'] }}
+  hosts:
+{% for mfkfk_host in hostvars[inventory_hostname]['mfkfk_hosts'] %} 
+    - "{{mfkfk_host}}"
+{% endfor %}
   topic: "{{ hostvars[inventory_hostname]['mfkfk_topic_name'] }}"
   username: "{{ hostvars[inventory_hostname]['mfkfk_username'] }}"
   password: "{{ hostvars[inventory_hostname]['mfkfk_password'] }}"
   sasl.mechanism: SCRAM-SHA-256
   ssl.verification_mode: certificate
-  ssl.certificate_authorities: {{ hostvars[inventory_hostname]['ssl']['certificate_authorities'] }}
+  ssl.certificate_authorities:
+{% for ssl_cert_authority in hostvars[inventory_hostname]['ssl']['certificate_authorities'] %}
+    - "{{ssl_cert_authority}}"
+{% endfor %}
 {% endif%}
 
 processors:
