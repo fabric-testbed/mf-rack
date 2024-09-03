@@ -9,6 +9,7 @@ filebeat.inputs:
 {% for log in filebeats_special.logs %}
       - "{{log}}"
 {% endfor %}
+    tags: {{filebeats_special.tags}}
 {% endif %}
 {% elif component_type == 'head' %}
 
@@ -23,24 +24,28 @@ filebeat.inputs:
         match: after
     paths:
        - /home/nrig-service/ControlFramework/fabric_cf/authority/{{ hank_name }}-am/logs/*.log
+    tags: ['am_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-data-sw
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.3/*.log
+    tags: ['data-sw_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-mgt-sw
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.2/*.log
+    tags: ['mgmt-sw_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-vpn
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.1/*.log
+    tags: ['srx_logs']
 
   - type: filestream
     enabled: true
@@ -48,6 +53,7 @@ filebeat.inputs:
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.110/*.log
        - /var/log/remote/192.168.{{ hank_id }}.111/*.log
+    tags: ['storage_logs']
 
   {% if hank_id == 11 %}
     - type: filestream
@@ -55,6 +61,7 @@ filebeat.inputs:
       id: nat64-gw
       paths:
          - /var/log/remote/192.168.{{ hank_id }}.4/*.log
+      tags: ['nat64_logs']
 {% endif %}
 {% endif %}
 {% if component_type == 'head' or component_type == 'worker' %}
@@ -64,6 +71,7 @@ filebeat.inputs:
     id: {{ hank_name }}-nova
     paths:
        - /var/log/nova/*.log
+    tags: ['openstack_logs']
 
   - type: filestream
     enabled: true
@@ -71,18 +79,21 @@ filebeat.inputs:
     paths:
        - /var/log/ptp4l.log
        - /var/log/phc2sys.log
+    tags: ['ptp_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-neutron
     paths:
        - /var/log/neutron/*.log
+    tags: ['openstack_logs']
 
   - type: filestream
     enabled: true
     id: dnf
     paths:
        - /var/log/dnf*.log
+    tags: ['dnf_logs']
 
 filebeat.modules:
   - module: system
@@ -90,10 +101,12 @@ filebeat.modules:
       enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/messages"]
       var.convert_timezone: false
+      var.tags: ['messages_logs']
     auth:
       enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/secure"]
       var.convert_timezone: false
+      var.tags: ['auth_logs']
 
 {% endif %}
 {% if component_type == 'central-vm' or component_type == 'central-server' %}
@@ -103,6 +116,7 @@ filebeat.modules:
       enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/secure"]
       var.convert_timezone: false
+      var.tags: ['auth_logs']
 {% endif %}
 {% if component_type == 'head' %}
 
@@ -110,6 +124,7 @@ filebeat.modules:
     log:
       enabled: true
       var.paths: ["/var/log/rabbitmq/rabbit@{{ hank_name }}-hn.log"]
+      var.tags: ['openstack_logs']
 
   - module: apache
     access:
@@ -117,11 +132,13 @@ filebeat.modules:
       var.paths: 
         - "/var/log/httpd/*access.log"
         - "/var/log/httpd/access_log"
+      var.tags: ['webserver_logs']
     error:
       enabled: true
       var.paths: 
         - "/var/log/httpd/*error.log"
         - "/var/log/httpd/error_log"
+      var.tags: ['webserver_logs']
 
 {% endif%}
 
@@ -142,6 +159,50 @@ output.kafka:
     - "{{mfkfk_host}}"
 {% endfor %}
   topic: "{{ hostvars[inventory_hostname]['mfkfk_topic_name'] }}"
+  topics:
+    - topic: "logs-auth"
+      when.contains:
+        tags: 'auth_logs'
+    - topic: "logs-dns"
+      when.contains:
+        tags: 'dns_logs'
+    - topic: "logs-vpn"
+      when.contains:
+        tags: 'vpn_logs'
+    - topic: "logs-mail-central"
+      when.contains:
+        tags: 'mail_central_logs'
+    - topic: "logs-ptp"
+      when.contains:
+        tags: 'ptp_logs'
+    - topic: "logs-data-sw"
+      when.contains:
+        tags: 'data-sw_logs'
+    - topic: "logs-mgmt-sw"
+      when.contains:
+        tags: 'mgmt-sw_logs'
+    - topic: "logs-storage"
+      when.contains:
+        tags: 'storage_logs'
+    - topic: "logs-srx"
+      when.contains:
+        tags: 'srx_logs'
+    - topic: "logs-nat64"
+      when.contains:
+        tags: 'nat64_logs'
+    - topic: "logs-webserver"
+      when.contains:
+        tags: 'webserver_logs'
+    - topic: "logs-openstack"
+      when.contains:
+        tags: 'openstack_logs'
+    - topic: "logs-messages"
+      when.contains:
+        tags: 'messages_logs'
+    - topic: "logs-dnf"
+      when.contains:
+        tags: 'dnf_logs'
+
   username: "{{ hostvars[inventory_hostname]['mfkfk_username'] }}"
   password: "{{ hostvars[inventory_hostname]['mfkfk_password'] }}"
   sasl.mechanism: SCRAM-SHA-256

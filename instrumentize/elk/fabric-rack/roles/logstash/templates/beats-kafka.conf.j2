@@ -12,15 +12,148 @@ filter {
 
 # Output to Kafka
 output {
-  kafka {
-    sasl_mechanism => "SCRAM-SHA-256"
-    security_protocol => "SASL_SSL"
-    ssl_truststore_location => "/etc/logstash/{{ hostvars[inventory_hostname]['ssl_truststore_file'] }}"
-    ssl_truststore_password => "{{ hostvars[inventory_hostname]['ssl_truststore_password'] }}"
-    bootstrap_servers => "{{ hostvars[inventory_hostname]['mfkfk_hosts'] | join(',') }}"
-    topic_id => "{{ hostvars[inventory_hostname]['mfkfk_topic_name'] }}"
-    #decorate_events => true
-    codec => json
-    sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{ hostvars[inventory_hostname]['mfkfk_username'] }}' password='{{ hostvars[inventory_hostname]['mfkfk_password'] }}';"
+  if "auth_logs" in [tags] {
+    kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-auth"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+  }
+  else if "ptp_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-ptp"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "data-sw_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-data-sw"
+      codec => json
+       ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "mgmt-sw_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-mgmt-sw"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "srx_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-srx"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "storage_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-storage"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "nat64_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-nat64"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "webserver_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-webserver"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "openstack_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-openstack"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "messages_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-messages"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else if "dnf_logs" in [tags] {
+     kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "logs-dnf"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
+ }
+ else {
+    kafka {
+      sasl_mechanism => "SCRAM-SHA-256"
+      security_protocol => "SASL_SSL"
+      topic_id => "fabric-beats"
+      codec => json
+      ssl_truststore_location => "/etc/logstash/{{hostvars[inventory_hostname]['ssl_truststore_file']}}"
+      ssl_truststore_password => "{{hostvars[inventory_hostname]['ssl_truststore_password']}}"
+      bootstrap_servers => "{{hostvars[inventory_hostname]['mfkfk_hosts']|join(',')}}"
+      sasl_jaas_config => "org.apache.kafka.common.security.scram.ScramLoginModule required username='{{hostvars[inventory_hostname]['mfkfk_username']}}' password='{{hostvars[inventory_hostname]['mfkfk_password']}}';"
+    }
   }
 }
