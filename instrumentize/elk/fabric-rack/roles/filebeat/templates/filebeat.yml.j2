@@ -202,6 +202,10 @@ output.kafka:
     - topic: "logs-dnf"
       when.contains:
         tags: 'dnf_logs'
+    - topic: "logs-webssh"
+      when.contains:
+        tags: 'webssh_logs'
+
 
   username: "{{ hostvars[inventory_hostname]['mfkfk_username'] }}"
   password: "{{ hostvars[inventory_hostname]['mfkfk_password'] }}"
