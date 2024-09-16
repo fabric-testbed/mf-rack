@@ -121,11 +121,11 @@ filebeat.modules:
   - module: nginx
     access:
       enabled: True
-      var.paths: ["{{filebeats_nginx.path}}/{{filebeats_nginx.log_filename.access}}"]
+      var.paths: ["{{filebeats_nginx.path}}{{filebeats_nginx.log_filename.access}}"]
       var.tags: ['nginx_logs']
     error:
       enabled: True
-      var.paths: ["{{filebeats_nginx.path}}/{{filebeats_nginx.log_filename.error}}"]
+      var.paths: ["{{filebeats_nginx.path}}{{filebeats_nginx.log_filename.error}}"]
       var.tags: ['nginx_logs']
 {% endif %}
 {% endif %}
