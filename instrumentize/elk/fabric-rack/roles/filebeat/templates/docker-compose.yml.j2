@@ -19,7 +19,7 @@ services:
 {% if component_type == 'head' %}
       - "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/:ro"
 {% endif %}
-{% if filebeats_special is defined and filebeats_special.logs is defined and and filebeats_special.logs|length > 0 %}
+{% if filebeats_special is defined and 'logs' in filebeats_special.keys() %}
 {% for log in filebeats_special.logs %}
       - "{{log.path}}:{{log.path}}:ro"
 {% endfor %}
