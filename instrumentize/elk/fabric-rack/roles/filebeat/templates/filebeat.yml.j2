@@ -2,14 +2,14 @@
 filebeat.inputs:
 {% if component_type == 'central-vm' or component_type == 'central-server' %}
 {% if filebeats_special is defined and filebeats_special.logs is defined and filebeats_special.logs|length > 0 %}
+{% for log in filebeats_special.logs %}
   - type: filestream
     enabled: true
     id: {{ hostname }}
     paths:
-{% for log in filebeats_special.logs %}
-      - "{{log}}"
+      - "{{log.name}}"
+    tags: {{log.tags}}
 {% endfor %}
-    tags: {{filebeats_special.tags}}
 {% endif %}
 {% elif component_type == 'head' %}
 
@@ -117,6 +117,17 @@ filebeat.modules:
       var.paths: ["/var/log/secure"]
       var.convert_timezone: false
       var.tags: ['auth_logs']
+{% if filebeats_nginx is defined  %}
+  - module: nginx
+    access:
+      enabled: True
+      var.paths: ["{{filebeats_nginx.path}}/{{filebeats_nginx.log_filename.access}}"]
+      var.tags: ['nginx_logs']
+    error:
+      enabled: True
+      var.paths: ["{{filebeats_nginx.path}}/{{filebeats_nginx.log_filename.error}}"]
+      var.tags: ['nginx_logs']
+{% endif %}
 {% endif %}
 {% if component_type == 'head' %}
 
@@ -129,15 +140,11 @@ filebeat.modules:
   - module: apache
     access:
       enabled: true
-      var.paths: 
-        - "/var/log/httpd/*access.log"
-        - "/var/log/httpd/access_log"
+      var.paths: ["/var/log/httpd/*access.log"]
       var.tags: ['webserver_logs']
     error:
       enabled: true
-      var.paths: 
-        - "/var/log/httpd/*error.log"
-        - "/var/log/httpd/error_log"
+      var.paths: ["/var/log/httpd/*error.log"]
       var.tags: ['webserver_logs']
 
 {% endif%}
@@ -205,7 +212,9 @@ output.kafka:
     - topic: "logs-webssh"
       when.contains:
         tags: 'webssh_logs'
-
+    - topic: "logs-nginx"
+      when.contains:
+        tags: 'nginx_logs'
 
   username: "{{ hostvars[inventory_hostname]['mfkfk_username'] }}"
   password: "{{ hostvars[inventory_hostname]['mfkfk_password'] }}"
