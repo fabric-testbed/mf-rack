@@ -102,6 +102,11 @@ filebeat.modules:
       var.paths: ["/var/log/messages"]
       var.convert_timezone: false
       var.tags: ['messages_logs']
+      input:
+        processors:
+          - add_tags:
+              tags: ['messages_logs']
+      
     auth:
       enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/secure"]
@@ -122,11 +127,9 @@ filebeat.modules:
     access:
       enabled: True
       var.paths: ["{{filebeats_nginx.path}}{{filebeats_nginx.log_filename.access}}"]
-      var.tags: ['nginx_logs']
     error:
       enabled: True
       var.paths: ["{{filebeats_nginx.path}}{{filebeats_nginx.log_filename.error}}"]
-      var.tags: ['nginx_logs']
 {% endif %}
 {% endif %}
 {% if component_type == 'head' %}
@@ -135,17 +138,28 @@ filebeat.modules:
     log:
       enabled: true
       var.paths: ["/var/log/rabbitmq/rabbit@{{ hank_name }}-hn.log"]
-      var.tags: ['openstack_logs']
+      input:
+        processors:
+          - add_tags:
+              tags: ['openstack_logs']
+
 
   - module: apache
     access:
       enabled: true
       var.paths: ["/var/log/httpd/*access.log"]
-      var.tags: ['webserver_logs']
+      input:
+        processors:
+          - add_tags:
+              tags: ['webserver_logs']
+
     error:
       enabled: true
       var.paths: ["/var/log/httpd/*error.log"]
-      var.tags: ['webserver_logs']
+      input:
+        processors:
+          - add_tags:
+              tags: ['webserver_logs']
 
 {% endif%}
 
@@ -199,13 +213,16 @@ output.kafka:
         tags: 'nat64_logs'
     - topic: "logs-webserver"
       when.contains:
-        tags: 'webserver_logs'
+        event.module: 'apache'
     - topic: "logs-openstack"
       when.contains:
         tags: 'openstack_logs'
+    - topic: "logs-openstack"
+      when.contains:
+        event.module: 'rabbitmq'
     - topic: "logs-messages"
       when.contains:
-        tags: 'messages_logs'
+        event.dataset: 'system.syslog'
     - topic: "logs-dnf"
       when.contains:
         tags: 'dnf_logs'
@@ -214,7 +231,7 @@ output.kafka:
         tags: 'webssh_logs'
     - topic: "logs-nginx"
       when.contains:
-        tags: 'nginx_logs'
+        event.module: 'nginx'
 
   username: "{{ hostvars[inventory_hostname]['mfkfk_username'] }}"
   password: "{{ hostvars[inventory_hostname]['mfkfk_password'] }}"
