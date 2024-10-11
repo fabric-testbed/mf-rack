@@ -88,7 +88,7 @@
     - name: Check if service is running
       ansible.builtin.assert:
         that:
-        - not ('output.services.'+item+'.fabric_prometheus_'+item+'.state.running)|bool
+        - not ('output.services.'+item+'.fabric_prometheus_'+item+'.state.running')|bool
       with_items: "{{ mon_containers }}"
   
     when: docker_compose_file_status.stat.exists
@@ -250,22 +250,52 @@
         dest: "{{ base_install_dir }}/docker-compose.yml"
   become: yes
 
+- name: Find Docker Compose version
+  shell: docker compose version --short 2>/dev/null || docker-compose version --short
+  register: docker_compose_version
+  ignore_errors: True
+
 ##############################
 #  Start Docker Compose      #
 ##############################
 
 - block:
-  - name: Start Docker compose
+  - name: Start Docker Compose
     community.docker.docker_compose:
       project_src: "{{ base_install_dir }}"
       state: present
-      started: true
+      restarted: true
       debug: false
     register: output
 
   - name: Check if service is running
     ansible.builtin.assert:
       that:
-        - "('output.services.'+item+'.fabric_prometheus_'+item+'.state.running)"
+        - "('output.services.'+item+'.fabric_prometheus_'+item+'.state.running')"
     with_items: "{{ mon_containers }}"
-        
+  when: 
+    - docker_compose_version is defined
+    - "docker_compose_version.stdout is version('2.18.0','<')"
+
+- block:
+  - name: Start Docker Composev2
+    community.docker.docker_compose_v2:
+      project_src: "{{ base_install_dir }}"
+      state: present
+      pull: always
+      build: always
+      recreate: always
+    register: output
+
+  - name: Check if service is running
+    ansible.builtin.assert:
+      that:
+        - my_container.State == "running"
+    vars:
+      my_container: >-
+        {{ output.containers | selectattr("Service", "equalto", item) | first }}
+    with_items: "{{ mon_containers }}"
+
+  when: 
+    - docker_compose_version is defined 
+    - "docker_compose_version.stdout is version('2.18.0','>=')"
