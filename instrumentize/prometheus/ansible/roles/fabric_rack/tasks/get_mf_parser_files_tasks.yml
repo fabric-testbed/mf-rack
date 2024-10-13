@@ -3,11 +3,9 @@
 
 - name: Clone mf-parser repo
   ansible.builtin.git:
-    repo: git@github.com:fabric-testbed/mf-parsers.git
-    #dest: /tmp/mf-parsers
+    repo: >-
+      {{ 'https://x-access-token:'+mf_parsers_github_access_token+'@github.com/fabric-testbed/mf-parsers.git' if mf_parsers_github_access_token is defined else 'git@github.com:fabric-testbed/mf-parsers.git' }}
     dest: "{{ tmp_deployment_files+'/mf-parsers' }}"
-    single_branch: yes
+    single_branch: true
     version: main
     force: true
-    
-    
