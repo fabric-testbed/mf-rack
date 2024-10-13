@@ -29,6 +29,6 @@
 # Start Packetbeat
 # - name: Start Filebeat
 #   tags: filebeat
-#   shell: docker-compose up -d filebeat
+#   shell: docker compose up -d filebeat
 #   args:
 #     chdir: /opt/beats/

@@ -26,17 +26,50 @@
       - { src: "logstash-docker.yml.j2", dest: "/opt/logstash/logstash-docker.yml" }
       - { src: "docker-compose.yml.j2", dest: "/opt/logstash/docker-compose.yml" }
 
-  - name: Start Logstash
-    community.docker.docker_compose:
-      project_src: /opt/logstash/
-      state: present
-      restarted: true
-      debug: false
-    register: output
+  - name: Find Docker Compose version
+    shell: docker compose version --short 2>/dev/null || docker-compose version --short
+    register: docker_compose_version
+    ignore_errors: True
 
-  - name: Check if service is running
-    ansible.builtin.assert:
-      that:
-        - "output.services.logstash.fabric_logstash.state.running"
+
+  - block:
+    - name: Start Logstash
+      community.docker.docker_compose:
+        project_src: /opt/logstash/
+        state: present
+        restarted: true
+        debug: false
+      register: output
+
+    - name: Check if service is running
+      ansible.builtin.assert:
+        that:
+          - "output.services.logstash.fabric_logstash.state.running"
+  
+    when: 
+      - docker_compose_version is defined
+      - "docker_compose_version.stdout is version('2.18.0','<')"
+
+  - block:
+    - name: Start Logstash
+      community.docker.docker_compose_v2:
+        project_src: /opt/logstash/
+        state: present
+        pull: always
+        build: always
+        recreate: always
+      register: output
+
+    - name: Check if service is running
+      ansible.builtin.assert:
+        that:
+          - logstash_container.State == "running"
+      vars:
+        logstash_container: >-
+          {{ output.containers | selectattr("Service", "equalto", "logstash") | first }}
+
+    when: 
+      - docker_compose_version is defined 
+      - "docker_compose_version.stdout is version('2.18.0','>=')"
+
   when: component_type == 'head'
-
