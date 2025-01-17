@@ -1,15 +1,18 @@
+---
 filebeat.inputs:
-{% if component_type != 'head' and component_type != 'worker' %}
-{% for collector in logs_collection %}
-{% if hostname in collector.hosts %}
+{% if component_type == 'central-vm' or component_type == 'central-server' %}
+{% if filebeats_special is defined and filebeats_special.logs is defined and filebeats_special.logs|length > 0 %}
+{% for log in filebeats_special.logs %}
   - type: filestream
     enabled: true
     id: {{ hostname }}
     paths:
-       - {{ collector.log_path }}
-{% endif %}
+      - "{{log.name}}"
+    tags: {{log.tags}}
 {% endfor %}
+{% endif %}
 {% elif component_type == 'head' %}
+
   - type: filestream
     enabled: true
     id: {{ hank_name }}-am
@@ -21,24 +24,28 @@ filebeat.inputs:
         match: after
     paths:
        - /home/nrig-service/ControlFramework/fabric_cf/authority/{{ hank_name }}-am/logs/*.log
+    tags: ['am_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-data-sw
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.3/*.log
+    tags: ['data-sw_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-mgt-sw
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.2/*.log
+    tags: ['mgmt-sw_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-vpn
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.1/*.log
+    tags: ['srx_logs']
 
   - type: filestream
     enabled: true
@@ -46,7 +53,16 @@ filebeat.inputs:
     paths:
        - /var/log/remote/192.168.{{ hank_id }}.110/*.log
        - /var/log/remote/192.168.{{ hank_id }}.111/*.log
+    tags: ['storage_logs']
 
+{% if hank_name == 'renc' %}
+  - type: filestream
+    enabled: true
+    id: nat64-gw
+    paths:
+       - /var/log/remote/192.168.{{ hank_id }}.4/*.log
+    tags: ['nat64_logs']
+{% endif %}
 {% endif %}
 {% if component_type == 'head' or component_type == 'worker' %}
 
@@ -55,6 +71,7 @@ filebeat.inputs:
     id: {{ hank_name }}-nova
     paths:
        - /var/log/nova/*.log
+    tags: ['openstack_logs']
 
   - type: filestream
     enabled: true
@@ -62,30 +79,58 @@ filebeat.inputs:
     paths:
        - /var/log/ptp4l.log
        - /var/log/phc2sys.log
+    tags: ['ptp_logs']
 
   - type: filestream
     enabled: true
     id: {{ hank_name }}-neutron
     paths:
        - /var/log/neutron/*.log
+    tags: ['openstack_logs']
 
   - type: filestream
     enabled: true
     id: dnf
     paths:
        - /var/log/dnf*.log
+    tags: ['dnf_logs']
 
 filebeat.modules:
   - module: system
     syslog:
-      enabled: {{ system_enable }}
+      enabled: {{ system_enable|string|lower }}
       var.paths: ["/var/log/messages"]
       var.convert_timezone: false
+      var.tags: ['messages_logs']
+      input:
+        processors:
+          - add_tags:
+              tags: ['messages_logs']
+      
     auth:
-      enabled: {{ system_enable }}
-      var.paths: ["/var/log/secure*"]
+      enabled: {{ system_enable|string|lower }}
+      var.paths: ["/var/log/secure"]
       var.convert_timezone: false
+      var.tags: ['auth_logs']
 
+{% endif %}
+{% if component_type == 'central-vm' or component_type == 'central-server' %}
+filebeat.modules:
+  - module: system
+    auth:
+      enabled: {{ system_enable|string|lower }}
+      var.paths: ["/var/log/secure"]
+      var.convert_timezone: false
+      var.tags: ['auth_logs']
+{% if filebeats_nginx is defined  %}
+  - module: nginx
+    access:
+      enabled: True
+      var.paths: ["{{filebeats_nginx.path}}{{filebeats_nginx.log_filename.access}}"]
+    error:
+      enabled: True
+      var.paths: ["{{filebeats_nginx.path}}{{filebeats_nginx.log_filename.error}}"]
+{% endif %}
 {% endif %}
 {% if component_type == 'head' %}
 
@@ -93,18 +138,28 @@ filebeat.modules:
     log:
       enabled: true
       var.paths: ["/var/log/rabbitmq/rabbit@{{ hank_name }}-hn.log"]
+      input:
+        processors:
+          - add_tags:
+              tags: ['openstack_logs']
+
 
   - module: apache
     access:
       enabled: true
-      var.paths: 
-        - "/var/log/httpd/*access.log"
-        - "/var/log/httpd/access_log"
+      var.paths: ["/var/log/httpd/*access.log"]
+      input:
+        processors:
+          - add_tags:
+              tags: ['webserver_logs']
+
     error:
       enabled: true
-      var.paths: 
-        - "/var/log/httpd/*error.log"
-        - "/var/log/httpd/error_log"
+      var.paths: ["/var/log/httpd/*error.log"]
+      input:
+        processors:
+          - add_tags:
+              tags: ['webserver_logs']
 
 {% endif%}
 
@@ -120,13 +175,72 @@ output.logstash:
 # -------------------------------- Kafka Output --------------------------------
 output.kafka:
   enabled: true
-  hosts: {{ hostvars[inventory_hostname]['mfkfk_hosts'] }}
+  hosts:
+{% for mfkfk_host in hostvars[inventory_hostname]['mfkfk_hosts'] %}
+    - "{{mfkfk_host}}"
+{% endfor %}
   topic: "{{ hostvars[inventory_hostname]['mfkfk_topic_name'] }}"
+  topics:
+    - topic: "logs-auth"
+      when.contains:
+        tags: 'auth_logs'
+    - topic: "logs-dns"
+      when.contains:
+        tags: 'dns_logs'
+    - topic: "logs-vpn"
+      when.contains:
+        tags: 'vpn_logs'
+    - topic: "logs-mail-central"
+      when.contains:
+        tags: 'mail_central_logs'
+    - topic: "logs-ptp"
+      when.contains:
+        tags: 'ptp_logs'
+    - topic: "logs-data-sw"
+      when.contains:
+        tags: 'data-sw_logs'
+    - topic: "logs-mgmt-sw"
+      when.contains:
+        tags: 'mgmt-sw_logs'
+    - topic: "logs-storage"
+      when.contains:
+        tags: 'storage_logs'
+    - topic: "logs-srx"
+      when.contains:
+        tags: 'srx_logs'
+    - topic: "logs-nat64"
+      when.contains:
+        tags: 'nat64_logs'
+    - topic: "logs-webserver"
+      when.contains:
+        event.module: 'apache'
+    - topic: "logs-openstack"
+      when.contains:
+        tags: 'openstack_logs'
+    - topic: "logs-openstack"
+      when.contains:
+        event.module: 'rabbitmq'
+    - topic: "logs-messages"
+      when.contains:
+        event.dataset: 'system.syslog'
+    - topic: "logs-dnf"
+      when.contains:
+        tags: 'dnf_logs'
+    - topic: "logs-webssh"
+      when.contains:
+        tags: 'webssh_logs'
+    - topic: "logs-nginx"
+      when.contains:
+        event.module: 'nginx'
+
   username: "{{ hostvars[inventory_hostname]['mfkfk_username'] }}"
   password: "{{ hostvars[inventory_hostname]['mfkfk_password'] }}"
   sasl.mechanism: SCRAM-SHA-256
   ssl.verification_mode: certificate
-  ssl.certificate_authorities: {{ hostvars[inventory_hostname]['ssl']['certificate_authorities'] }}
+  ssl.certificate_authorities:
+{% for ssl_cert_authority in hostvars[inventory_hostname]['ssl']['certificate_authorities'] %}
+    - "{{ssl_cert_authority}}"
+{% endfor %}
 {% endif%}
 
 processors:

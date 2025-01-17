@@ -15,18 +15,19 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/var/lib/docker/containers/:/var/lib/docker/containers/:ro"
-{% if component_type != 'head' and component_type != 'worker' %}
-{% for collector in logs_collection %}
-{% if hostname in collector.hosts and "/home/nrig-service/ControlFramework/fabric_cf" not in collector.log_path %}
-      - "{{ collector.log_path|dirname+'/:'+collector.log_path|dirname+'/' }}"
-{% endif %}
-{% endfor %}
-{% else %}
       - "/var/log/:/var/log/:ro"
-      - "/opt/data/zeek/logs:/opt/zeek/logs"
-      - "/opt/data/zeek/spool:/opt/zeek/spool"
-      - "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/"
+{% if component_type == 'head' %}
+      - "/home/nrig-service/ControlFramework/fabric_cf/:/home/nrig-service/ControlFramework/fabric_cf/:ro"
 {% endif %}
+{% if filebeats_special is defined and 'logs' in filebeats_special.keys() %}
+{% for log in filebeats_special.logs %}
+      - "{{log.path}}:{{log.path}}:ro"
+{% endfor %}
+{% endif %}
+{% if filebeats_nginx is defined  %}
+      - "{{filebeats_nginx.path}}:{{filebeats_nginx.path}}:ro"
+{% endif %}
+
     secrets:
       - source: filebeat.yml
         target: /usr/share/filebeat/filebeat.yml

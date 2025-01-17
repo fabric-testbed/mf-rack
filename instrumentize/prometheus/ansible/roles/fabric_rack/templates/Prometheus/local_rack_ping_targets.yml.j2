@@ -30,6 +30,7 @@
 
 
 # Switches
+{% if hank_name+'_switch' in groups.keys() %}
 {% for h in groups[hank_name+"_switch"] %}
 - targets:
         - {{ hostvars[h].ansible_host }}
@@ -40,6 +41,7 @@
         release: prod
         relation: rack
 {% endfor %}
+{% endif %}
 
 
 
