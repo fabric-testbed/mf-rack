@@ -181,6 +181,9 @@ output.kafka:
 {% endfor %}
   topic: "{{ hostvars[inventory_hostname]['mfkfk_topic_name'] }}"
   topics:
+    - topic: "logs-zeek"
+      when.contains:
+        tags: 'zeek_logs'
     - topic: "logs-auth"
       when.contains:
         tags: 'auth_logs'
