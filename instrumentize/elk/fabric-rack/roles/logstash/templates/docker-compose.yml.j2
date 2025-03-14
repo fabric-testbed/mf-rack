@@ -1,8 +1,8 @@
-version: "3.6"
+#version: "3.6"
 
 services:
   logstash:
-    image: docker.elastic.co/logstash/logstash:8.6.1
+    image: docker.elastic.co/logstash/logstash:8.17.3
     network_mode: host
     extra_hosts:
 {% for mf_br in mfkfk_hosts %}

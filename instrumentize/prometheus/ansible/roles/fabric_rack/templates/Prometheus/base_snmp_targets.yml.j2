@@ -1,12 +1,15 @@
 ---
 # Needs redoing with the module fix and adding more mibs
 # Management Switch
+{% if hank_name+'mgt-sw' in hostvars.keys() %}
 - targets: 
     - "{{hostvars[hank_name + '-mgt-sw'].ansible_host}}"
   labels:
     job: 'mgt-sw' 
     mib_module: 'if_mib'
+{% endif %}
     
+{% if hank_name+'data-sw' in hostvars.keys() %}
 # Dataplane Switch
 - targets:
     - "{{hostvars[hank_name + '-data-sw'].ansible_host}}"
@@ -14,6 +17,7 @@
     job: 'data-sw'
     mib_module: 'if_mib'
 
+{% endif %}
 {% if hostvars[hank_name + '-pdu'] is defined and 'ansible_host' in (hostvars[hank_name + '-pdu']).keys() %}
 # PDU
 - targets:
