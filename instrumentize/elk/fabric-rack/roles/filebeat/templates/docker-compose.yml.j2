@@ -1,13 +1,13 @@
-version: "3.6"
+#version: "3.6"
 
 services:
   filebeat:
-    image: docker.elastic.co/beats/filebeat:8.6.1
+    image: docker.elastic.co/beats/filebeat:8.17.3
     network_mode: host
     restart: always
     container_name: fabric_beats_filebeat
     user: root
-    command: -strict.perms=false -e
+#    command: -strict.perms=false -e
     logging:
       driver: "json-file"
       options:
@@ -21,7 +21,13 @@ services:
 {% endif %}
 {% if filebeats_special is defined and 'logs' in filebeats_special.keys() %}
 {% for log in filebeats_special.logs %}
+{% if log.path is string %}
       - "{{log.path}}:{{log.path}}:ro"
+{% else %}
+{% for path in log.path %}
+      - "{{path}}:{{path}}:ro"
+{% endfor %}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% if filebeats_nginx is defined  %}
