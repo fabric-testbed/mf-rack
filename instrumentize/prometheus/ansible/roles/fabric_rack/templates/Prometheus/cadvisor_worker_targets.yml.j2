@@ -1,0 +1,14 @@
+---
+# Set targets for cadvisors on worker node.
+
+# Worker Nodes
+- targets:
+{% for h in groups[hank_name+"_worker"] %}
+        - '{{ hostvars[h].hostname }}:29090/cadvisor'
+{% endfor %}
+  labels:
+        job: cadvisor_worker
+        component_type: worker
+
+
+

@@ -5,19 +5,23 @@
 
     image: nginx:1.26
     volumes:
-      #
-      - "{{ base_install_dir }}/nginx/html:/usr/share/nginx/html"
+      # Auxillary files
+      ##- "{{ base_install_dir }}/nginx/html:/usr/share/nginx/html"
       - "{{ base_install_dir }}/nginx/config/nginx.conf:/etc/nginx/nginx.conf"
-      - "{{ base_install_dir }}/nginx/config/htpasswd:/etc/nginx/htpasswd"
+      ##- "{{ base_install_dir }}/nginx/config/htpasswd:/etc/nginx/htpasswd"
+      
       # TLS configs snippet.
       - "{{ base_install_dir }}/nginx/config/ssl_snippet.conf:/etc/nginx/ssl_snippet.conf"
-      # TLS certs already on node.
-      - "{{ nginx_interm_cert }}:/etc/nginx/root_CA_cert_plus_intermediates_file:ro"
-      - "{{ nginx_key }}:/etc/nginx/key_file:ro"
-      - "{{ nginx_cert }}:/etc/nginx/cert_file:ro"
+      # Using Self-signed TLS certs already on node.
+      ##- "{{ nginx_interm_cert }}:/etc/nginx/root_CA_cert_plus_intermediates_file:ro"
+
+      - "{{ base_install_dir }}/nginx/certs/tls.key:/etc/nginx/key_file:ro"
+      - "{{ base_install_dir }}/nginx/certs/tls.cert:/etc/nginx/cert_file:ro"
+
       # Conf.d files
       - "{{ base_install_dir }}/nginx/conf.d:/etc/nginx/conf.d"
-    ports: {{ nginx_ip_ports }}
+
+    ports: {{ nginx_ip_ports_worker }}
   
 
     logging:

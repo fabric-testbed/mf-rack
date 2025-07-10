@@ -1,0 +1,23 @@
+  process_exporter:
+    container_name: {{ install_name }}_process_exporter
+    image: ncabatoff/process-exporter
+    volumes:
+                - /proc:/host/proc:ro
+                - {{ base_install_dir }}/process_exporter/config:/config:rw
+
+    command:
+                - "-config.path=/config/config.yml"
+                - "-procfs=/host/proc"
+    #ports:
+    #              -  9256:9256
+
+    privileged: true
+
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "1024m" 
+        max-file: "5"
+
+    restart: always

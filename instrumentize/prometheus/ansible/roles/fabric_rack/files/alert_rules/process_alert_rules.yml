@@ -1,0 +1,20 @@
+---
+# file: process_alert_rules.yml
+# location: racks
+
+groups: 
+
+- name: Process Exporter Alerts  
+  rules:
+
+  - alert: LibvirtdExcessMemory
+    expr: ( ( namedprocess_namegroup_memory_bytes{memtype="resident", groupname="libvirt daemon"} / ignoring(memtype) namedprocess_namegroup_num_procs > 0 )/1000000000 ) > 10
+    for: 5m
+    labels: 
+      severity: critical
+      fabric_response: services
+      
+    annotations:
+      summary:  "{{ $externalLabels.rack }} Libvirtd using excessive memory {{ $labels.instance }} ."   
+      description: "{{ $externalLabels.rack }} Libvirtd using excessive memory {{ $labels.instance }} ."  
+
