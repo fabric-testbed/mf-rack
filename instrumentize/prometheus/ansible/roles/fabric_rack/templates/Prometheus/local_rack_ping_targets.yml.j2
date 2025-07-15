@@ -63,6 +63,7 @@
 
 
 # Others
+{% if hank_name+"_others" in groups.keys() %}
 {% for h in groups[hank_name+"_others"] %}
 {% if h.split("-")[1] == "pdu" %}
 # pdu have multiple ips that are not listed
@@ -78,4 +79,4 @@
         relation: rack
 {% endif %}
 {% endfor %}
-
+{% endif %}
