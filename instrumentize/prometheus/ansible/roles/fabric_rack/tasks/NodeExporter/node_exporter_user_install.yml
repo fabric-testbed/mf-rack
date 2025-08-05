@@ -1,0 +1,21 @@
+---
+- name: Add Node Exporters user ids
+  block:
+  - name: Add node-exp group.
+    group:
+      name: node-exp
+      state: present
+      system: true
+  
+  - name: Add node-exp user.
+    user:
+      name: node-exp
+      groups: node-exp
+      append: true
+      shell: /usr/sbin/nologin
+      system: true
+      create_home: false
+      home: /
+
+
+  become: yes
