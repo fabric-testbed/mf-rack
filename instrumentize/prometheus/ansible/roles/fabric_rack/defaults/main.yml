@@ -256,7 +256,7 @@ mon_containers:
   - 'thanos_sidecar'
   - 'blackbox'
 
-  worker_mon_containers:
+worker_mon_containers:
   - 'nginx'
   - 'cadvisor'
   - 'process_exporter'
