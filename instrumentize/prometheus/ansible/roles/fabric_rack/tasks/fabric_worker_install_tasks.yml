@@ -72,7 +72,6 @@
       with_items: "{{ worker_mon_containers }}"
     when: 
       - docker_compose_file_status.stat.exists
-      - worker_mon_containers is defined
 
 
 
