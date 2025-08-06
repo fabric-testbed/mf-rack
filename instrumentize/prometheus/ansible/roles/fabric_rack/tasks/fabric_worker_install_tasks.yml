@@ -186,6 +186,9 @@
             #- worker_cadvisor.conf
             - worker_exporter_proxy.conf
 
+    - name: Install Node Exporter Certs
+      include_tasks: NodeExporter/node_exporter_user_install.yml
+
     # Add self-signed cert
     - name: create key    
       openssl_privatekey:
@@ -210,6 +213,8 @@
         provider: selfsigned
         owner: node-exp
         group: node-exp
+
+
 
   become: yes
 
