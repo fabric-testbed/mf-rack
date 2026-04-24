@@ -32,23 +32,6 @@
 
 - block:
   - name: Start Filebeat
-    community.docker.docker_compose:
-      project_src: /opt/beats/
-      state: present
-      restarted: true
-      debug: false
-    register: output
-
-  - name: Check if service is running
-    ansible.builtin.assert:
-      that:
-        - "output.services.filebeat.fabric_beats_filebeat.state.running"
-  when: 
-    - docker_compose_version is defined
-    - "docker_compose_version.stdout is version('2.18.0','<')"
-
-- block:
-  - name: Start Filebeat
     community.docker.docker_compose_v2:
       project_src: /opt/beats/
       state: present

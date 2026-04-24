@@ -31,25 +31,6 @@
     register: docker_compose_version
     ignore_errors: True
 
-
-  - block:
-    - name: Start Logstash
-      community.docker.docker_compose:
-        project_src: /opt/logstash/
-        state: present
-        restarted: true
-        debug: false
-      register: output
-
-    - name: Check if service is running
-      ansible.builtin.assert:
-        that:
-          - "output.services.logstash.fabric_logstash.state.running"
-  
-    when: 
-      - docker_compose_version is defined
-      - "docker_compose_version.stdout is version('2.18.0','<')"
-
   - block:
     - name: Start Logstash
       community.docker.docker_compose_v2:
