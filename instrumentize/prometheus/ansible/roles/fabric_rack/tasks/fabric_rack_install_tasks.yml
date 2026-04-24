@@ -87,18 +87,6 @@
     register: docker_compose_file_status
 
   - block:
-    - name: Stop Docker compose file V1
-      community.docker.docker_compose:
-        project_src: "{{ base_install_dir }}"
-        state: present
-        stopped: true
-        debug: false
-      register: output
-      when: 
-        - docker_compose_version is defined
-        - "docker_compose_version.stdout is version('2.18.0','<')"
-
-
     - name: Stop Docker compose file V2
       community.docker.docker_compose_v2:
         project_src: "{{ base_install_dir }}"
@@ -281,24 +269,6 @@
 ##############################
 #  Start Docker Compose      #
 ##############################
-
-- block:
-  - name: Start Docker Compose
-    community.docker.docker_compose:
-      project_src: "{{ base_install_dir }}"
-      state: present
-      restarted: true
-      debug: false
-    register: output
-
-  - name: Check if service is running
-    ansible.builtin.assert:
-      that:
-        - "('output.services.'+item+'.fabric_prometheus_'+item+'.state.running')"
-    with_items: "{{ mon_containers }}"
-  when: 
-    - docker_compose_version is defined
-    - "docker_compose_version.stdout is version('2.18.0','<')"
 
 - block:
   - name: Start Docker Composev2
