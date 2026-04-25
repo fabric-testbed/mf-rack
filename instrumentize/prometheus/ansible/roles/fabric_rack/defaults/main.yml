@@ -1,7 +1,7 @@
 ---
 # This file contains the common default variables that are the same for all racks.
 
-ansible_python_interpreter: "/bin/python3"
+#ansible_python_interpreter: "/bin/python3"
 
 
 # empty value to be filled in later if needed

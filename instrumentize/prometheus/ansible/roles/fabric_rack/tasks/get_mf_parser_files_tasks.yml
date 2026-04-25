@@ -9,3 +9,6 @@
     single_branch: true
     version: main
     force: true
+  vars:
+    # Use the system Python which has the dnf/apt bindings
+    ansible_python_interpreter: /usr/bin/python3

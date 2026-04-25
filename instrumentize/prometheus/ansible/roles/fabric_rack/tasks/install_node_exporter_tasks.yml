@@ -9,13 +9,12 @@
   include_tasks: NodeExporter/node_exporter_certs_tasks.yml
 
 - name: Install Node Exporter
-  include_role: 
+  include_role:
     name: prometheus.prometheus.node_exporter
- 
   vars:
     node_exporter_basic_auth_users: "{{ { node_exporter_username : node_exporter_password } }}"
     node_exporter_tls_server_config:
+      cert_file: '/etc/node_exporter/tls.cert'
+      key_file: '/etc/node_exporter/tls.key'
       # Note these values are hardcoded in above task.
       # TODO make variable in above task. NodeExporter/node_exporter_certs_tasks.yml
-      cert_file: /etc/node_exporter/tls.cert
-      key_file: /etc/node_exporter/tls.key

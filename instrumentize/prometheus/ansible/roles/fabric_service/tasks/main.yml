@@ -15,8 +15,8 @@
 - name: Install Node Exporter
   include_role: 
     name: prometheus.prometheus.node_exporter
-
   vars:
+    # Use the system Python which has the dnf/apt bindings
     node_exporter_basic_auth_users: "{{ { node_exporter_username : node_exporter_password } }}"
     node_exporter_tls_server_config:
       # Note these values are hardcoded in above task.

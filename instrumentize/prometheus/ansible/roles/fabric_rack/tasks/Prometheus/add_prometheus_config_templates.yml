@@ -1,10 +1,15 @@
 ---
 # Add a file or template to the prometheus config directory
 # Note that the template files are passed in without the .j2 suffix
+- debug:
+    msg: "{{ prometheus_templates_dir +'/'+ item +'.j2' }}"
+    verbosity: 1
+  with_items: "{{ prometheus_config_template_files }}"
+
 - name: Add Prometheus Config
-  template:
-    src: "{{ prometheus_templates_dir }}/{{ item }}.j2"
-    dest: "{{ base_install_dir }}/prometheus/config/{{ item }}"
+  ansible.builtin.template:
+    src: "{{ prometheus_templates_dir +'/'+ item +'.j2' }}"
+    dest: "{{ base_install_dir + '/prometheus/config/' + item }}"
     owner: "{{ prom_user_name }}"
     group: "{{ prom_group_name }}"
   with_items: "{{ prometheus_config_template_files }}"
