@@ -5,7 +5,8 @@
   ansible.builtin.git:
     repo: >-
       {{ 'https://x-access-token:'+mf_parsers_github_access_token+'@github.com/fabric-testbed/mf-parsers.git' if mf_parsers_github_access_token is defined else 'git@github.com:fabric-testbed/mf-parsers.git' }}
-    dest: "{{ tmp_deployment_files+'/mf-parsers' }}"
+    #dest: "{{ tmp_deployment_files+'/mf-parsers' }}"
+    dest: tmp_deployment_files/mf-parsers
     single_branch: true
     version: main
     force: true
